@@ -1,4 +1,4 @@
-l/**
+/**
  * This is a driver library for VS1053 MP3 Codec Breakout
  * (Ogg Vorbis / MP3 / AAC / WMA / FLAC / MIDI Audio Codec Chip).
  * Adapted for Espressif ESP8266 and ESP32 boards.
