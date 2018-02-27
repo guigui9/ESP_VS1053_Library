@@ -17,6 +17,8 @@
  *          by Ed Smallenburg (github: @edzelf)
  *  - 2017: refactored to use as PlatformIO library
  *          by Marcin Szalomski (github: @baldram | twitter: @baldram)
+ *  - 2018: Replacing the ArduinoLog library with the SeriaPrint function.
+ *          (github: @guigui9)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,61 +36,63 @@
 #ifndef VS1053_H
 #define VS1053_H
 
+#define DEBUG              0
+#define DEBUG_BUFFER_SIZE  128
+
 #include <Arduino.h>
 #include <SPI.h>
 
 class VS1053 {
 private:
-    uint8_t cs_pin;                         // Pin where CS line is connected
-    uint8_t dcs_pin;                        // Pin where DCS line is connected
-    uint8_t dreq_pin;                       // Pin where DREQ line is connected
-    uint8_t curvol;                         // Current volume setting 0..100%
+    uint8_t cs_pin;    // Pin where CS line is connected
+    uint8_t dcs_pin;   // Pin where DCS line is connected
+    uint8_t dreq_pin;  // Pin where DREQ line is connected
+    uint8_t curvol;    // Current volume setting 0..100%
     const uint8_t vs1053_chunk_size = 32;
     // SCI Register
-    const uint8_t SCI_MODE = 0x0;
-    const uint8_t SCI_BASS = 0x2;
-    const uint8_t SCI_CLOCKF = 0x3;
-    const uint8_t SCI_AUDATA = 0x5;
-    const uint8_t SCI_WRAM = 0x6;
+    const uint8_t SCI_MODE     = 0x0;
+    const uint8_t SCI_BASS     = 0x2;
+    const uint8_t SCI_CLOCKF   = 0x3;
+    const uint8_t SCI_AUDATA   = 0x5;
+    const uint8_t SCI_WRAM     = 0x6;
     const uint8_t SCI_WRAMADDR = 0x7;
-    const uint8_t SCI_AIADDR = 0xA;
-    const uint8_t SCI_VOL = 0xB;
-    const uint8_t SCI_AICTRL0 = 0xC;
-    const uint8_t SCI_AICTRL1 = 0xD;
+    const uint8_t SCI_AIADDR   = 0xA;
+    const uint8_t SCI_VOL      = 0xB;
+    const uint8_t SCI_AICTRL0  = 0xC;
+    const uint8_t SCI_AICTRL1  = 0xD;
     const uint8_t SCI_num_registers = 0xF;
     // SCI_MODE bits
-    const uint8_t SM_SDINEW = 11;           // Bitnumber in SCI_MODE always on
-    const uint8_t SM_RESET = 2;             // Bitnumber in SCI_MODE soft reset
-    const uint8_t SM_CANCEL = 3;            // Bitnumber in SCI_MODE cancel song
-    const uint8_t SM_TESTS = 5;             // Bitnumber in SCI_MODE for tests
-    const uint8_t SM_LINE1 = 14;            // Bitnumber in SCI_MODE for Line input
-    SPISettings VS1053_SPI;                 // SPI settings for this slave
-    uint8_t endFillByte;                    // Byte to send when stopping song
+    const uint8_t SM_SDINEW = 11;  // Bitnumber in SCI_MODE always on
+    const uint8_t SM_RESET  =  2;  // Bitnumber in SCI_MODE soft reset
+    const uint8_t SM_CANCEL =  3;  // Bitnumber in SCI_MODE cancel song
+    const uint8_t SM_TESTS  =  5;  // Bitnumber in SCI_MODE for tests
+    const uint8_t SM_LINE1  = 14;  // Bitnumber in SCI_MODE for Line input
+    SPISettings VS1053_SPI;        // SPI settings for this slave
+    uint8_t endFillByte;           // Byte to send when stopping song
 protected:
-    inline void await_data_request() const {
-        while (!digitalRead(dreq_pin)) {
+    inline void await_data_request () const {
+        while (!digitalRead(dreq_pin))
             yield();                        // Very short delay
-        }
     }
 
-    inline void control_mode_on() const {
+    inline void control_mode_on () const {
         SPI.beginTransaction(VS1053_SPI);   // Prevent other SPI users
         digitalWrite(dcs_pin, HIGH);        // Bring slave in control mode
         digitalWrite(cs_pin, LOW);
     }
 
-    inline void control_mode_off() const {
+    inline void control_mode_off () const {
         digitalWrite(cs_pin, HIGH);         // End control mode
         SPI.endTransaction();               // Allow other SPI users
     }
 
-    inline void data_mode_on() const {
+    inline void data_mode_on () const {
         SPI.beginTransaction(VS1053_SPI);   // Prevent other SPI users
         digitalWrite(cs_pin, HIGH);         // Bring slave in data mode
         digitalWrite(dcs_pin, LOW);
     }
 
-    inline void data_mode_off() const {
+    inline void data_mode_off () const {
         digitalWrite(dcs_pin, HIGH);        // End data mode
         SPI.endTransaction();               // Allow other SPI users
     }
@@ -107,13 +111,14 @@ protected:
 
 public:
     // Constructor.  Only sets pin values.  Doesn't touch the chip.  Be sure to call begin()!
-    VS1053(uint8_t _cs_pin, uint8_t _dcs_pin, uint8_t _dreq_pin);
+    VS1053 (uint8_t _cs_pin, uint8_t _dcs_pin, uint8_t _dreq_pin);
 
     bool begin();                               // Begin operation.  Sets pins correctly,
                                                 // and prepares SPI bus.
     void startSong();                           // Prepare to start playing. Call this each
                                                 // time a new song starts.
-    void playChunk(uint8_t *data, size_t len);  // Play a chunk of data.  Copies the data to
+  //void playChunk (      uint8_t *data, size_t len);
+    void playChunk (const uint8_t *data, size_t len);  // Play a chunk of data.  Copies the data to
                                                 // the chip.  Blocks until complete.
     void stopSong();                            // Finish playing a song. Call this after
                                                 // the last playChunk call.
@@ -130,7 +135,10 @@ public:
         return (digitalRead(dreq_pin) == HIGH);
     }
 
-    void switchToMp3Mode(void);
+    void switchToMp3Mode ();
 };
 
-#endif
+#define srPrint  SerialPrint
+char* SerialPrint (const char* format, ...);
+
+#endif  // VS1053_H
