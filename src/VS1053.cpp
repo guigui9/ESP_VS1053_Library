@@ -17,7 +17,7 @@
  *          by Ed Smallenburg (github: @edzelf)
  *  - 2017: refactored to use as PlatformIO library
  *          by Marcin Szalomski (github: @baldram | twitter: @baldram)
- *  - 2018: Replacing the ArduinoLog library with the SeriaPrint function.
+ *  - 2018: Replacing the ArduinoLog library with the SerialPrint function.
  *          (github: @guigui9)
  *
  * This program is free software; you can redistribute it and/or modify
