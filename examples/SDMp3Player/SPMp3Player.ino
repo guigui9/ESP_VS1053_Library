@@ -18,7 +18,7 @@
 #include <ESP8266WiFi.h>
 #include <SPI.h>
 #include <SD.h>
-#include "VS1053.h"  // version simplifiée ("ArduinoLog" ==> "SerialPrint")
+#include <VS1053.h>
 
 #define SD_CHIP_SELECT  D8
 #define CHUNK_SD        1024  // 32
@@ -28,7 +28,7 @@ uint8_t sdBuf[CHUNK_SD];
 #define PAUSE      (10 * 1000)
 
 File    mp3File;
-uint8_t nextFile = MAX_FILE - 1;  // pour demarrer a 0 : (ligne 73) = 0
+uint8_t nextFile = MAX_FILE - 1;  // start 0 : (line 73) = 0
 char    fileName[14]              =  "/MUSIC00.MP3\0";  // "/TRACK00.MP3\0"
 uint32_t prevMillis = PAUSE;
 
